@@ -16,6 +16,12 @@ class TestAccountInvoiceLine(TransactionCase):
         cls.analytic_account2 = cls.env["account.analytic.account"].create(
             {"name": "test analytic_account2"}
         )
+        cls.analytic_tag1 = cls.env["account.analytic.tag"].create(
+            {"name": "test analytic_tag1"}
+        )
+        cls.analytic_tag2 = cls.env["account.analytic.tag"].create(
+            {"name": "test analytic_tag2"}
+        )
         cls.product = cls.env["product.product"].create(
             {
                 "name": "test product",
@@ -23,6 +29,10 @@ class TestAccountInvoiceLine(TransactionCase):
                 "standard_price": 50,
                 "income_analytic_account_id": cls.analytic_account1.id,
                 "expense_analytic_account_id": cls.analytic_account2.id,
+                "income_analytic_account_tag_ids": [(6, 0, [cls.analytic_tag1.id])],
+                "expense_analytic_account_tag_ids": [
+                    (6, 0, [cls.analytic_tag1.id, cls.analytic_tag2.id])
+                ],
             }
         )
         cls.partner = cls.env["res.partner"].create({"name": "Test partner"})
@@ -70,6 +80,10 @@ class TestAccountInvoiceLine(TransactionCase):
             invoice_line.analytic_account_id.id,
             self.product.expense_analytic_account_id.id,
         )
+        self.assertEqual(
+            invoice_line.analytic_tag_ids.ids,
+            self.product.expense_analytic_account_tag_ids.ids,
+        )
 
     def test_create_out(self):
         invoice = self.env["account.move"].create(
@@ -97,4 +111,8 @@ class TestAccountInvoiceLine(TransactionCase):
         self.assertEqual(
             invoice_line.analytic_account_id.id,
             self.product.income_analytic_account_id.id,
+        )
+        self.assertEqual(
+            invoice_line.analytic_tag_ids.ids,
+            self.product.income_analytic_account_tag_ids.ids,
         )
